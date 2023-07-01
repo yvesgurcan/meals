@@ -11,14 +11,23 @@ enum DaysOfTheWeek {
     sunday = 'sunday',
 }
 
+interface Meals {
+    breakfast: string[];
+    snack1: string[];
+    lunch: string[];
+    snack2: string[];
+    dinner: string[];
+    snack3: string[];
+}
+
 interface MealPlan {
-    [DaysOfTheWeek.monday]: string[];
-    [DaysOfTheWeek.tuesday]: string[];
-    [DaysOfTheWeek.wednesday]: string[];
-    [DaysOfTheWeek.thursday]: string[];
-    [DaysOfTheWeek.friday]: string[];
-    [DaysOfTheWeek.saturday]: string[];
-    [DaysOfTheWeek.sunday]: string[];
+    [DaysOfTheWeek.monday]: Meals;
+    [DaysOfTheWeek.tuesday]: Meals;
+    [DaysOfTheWeek.wednesday]: Meals;
+    [DaysOfTheWeek.thursday]: Meals;
+    [DaysOfTheWeek.friday]: Meals;
+    [DaysOfTheWeek.saturday]: Meals;
+    [DaysOfTheWeek.sunday]: Meals;
 }
 
 const LOCAL_STORAGE_PROPERTY = 'mealplan';
@@ -54,6 +63,15 @@ const MEAL_PLAN_BUILDER = [
     },
 ];
 
+const MEAL_NAMES = {
+    breakfast: 'Breakfast',
+    snack1: 'Snack',
+    lunch: 'Lunch',
+    snack2: 'Snack',
+    dinner: 'Dinner',
+    snack3: 'Snack',
+};
+
 const Days = styled.div`
     box-sizing: border-box;
     display: grid;
@@ -73,7 +91,7 @@ const Day = styled.div`
     padding: 1rem;
 `;
 
-const DayTitle = styled.div`
+const MealTitle = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -137,13 +155,62 @@ function formatTimestamp(date: Date): string {
 
 const App: React.FC = () => {
     const [mealPlan, setMealPlan] = useState<MealPlan>({
-        monday: [],
-        tuesday: [],
-        wednesday: [],
-        thursday: [],
-        friday: [],
-        saturday: [],
-        sunday: [],
+        monday: {
+            breakfast: [],
+            snack1: [],
+            lunch: [],
+            snack2: [],
+            dinner: [],
+            snack3: [],
+        },
+        tuesday: {
+            breakfast: [],
+            snack1: [],
+            lunch: [],
+            snack2: [],
+            dinner: [],
+            snack3: [],
+        },
+        wednesday: {
+            breakfast: [],
+            snack1: [],
+            lunch: [],
+            snack2: [],
+            dinner: [],
+            snack3: [],
+        },
+        thursday: {
+            breakfast: [],
+            snack1: [],
+            lunch: [],
+            snack2: [],
+            dinner: [],
+            snack3: [],
+        },
+        friday: {
+            breakfast: [],
+            snack1: [],
+            lunch: [],
+            snack2: [],
+            dinner: [],
+            snack3: [],
+        },
+        saturday: {
+            breakfast: [],
+            snack1: [],
+            lunch: [],
+            snack2: [],
+            dinner: [],
+            snack3: [],
+        },
+        sunday: {
+            breakfast: [],
+            snack1: [],
+            lunch: [],
+            snack2: [],
+            dinner: [],
+            snack3: [],
+        },
     });
 
     const [updateLocalStorage, setUpdateLocalStorage] = useState(false);
@@ -165,25 +232,35 @@ const App: React.FC = () => {
         }
     }, [mealPlan]);
 
-    const handleAddItem = (day: keyof MealPlan) => {
+    const handleAddItem = (day: keyof MealPlan, meal: keyof Meals) => {
         const newItem = prompt('Enter a new item:');
         if (newItem) {
             setMealPlan((prevMealPlan) => ({
                 ...prevMealPlan,
-                [day]: [...prevMealPlan[day], newItem],
+                [day]: {
+                    ...prevMealPlan[day],
+                    [meal]: [...prevMealPlan[day][meal], newItem],
+                },
             }));
             setUpdateLocalStorage(true);
         }
     };
 
-    const handleDeleteItem = (day: keyof MealPlan, index: number) => {
+    const handleDeleteItem = (
+        day: keyof MealPlan,
+        meal: keyof Meals,
+        index: number
+    ) => {
         setMealPlan((prevMealPlan) => {
-            const updatedMealPlan = prevMealPlan[day].filter(
+            const updatedMealPlanDayMeal = prevMealPlan[day][meal].filter(
                 (_, i) => i !== index
             );
             return {
                 ...prevMealPlan,
-                [mealPlan]: updatedMealPlan,
+                [day]: {
+                    ...prevMealPlan[day],
+                    [meal]: updatedMealPlanDayMeal,
+                },
             };
         });
         setUpdateLocalStorage(true);
@@ -242,32 +319,56 @@ const App: React.FC = () => {
             <Days>
                 {MEAL_PLAN_BUILDER.map((day) => (
                     <Day key={day.name}>
-                        <DayTitle>
-                            <h2>{day.name}</h2>
-                            <AddItemButton
-                                onClick={() => handleAddItem(day.property)}
-                            >
-                                ➕
-                            </AddItemButton>
-                        </DayTitle>
+                        <h2>{day.name}</h2>
                         <List>
-                            {mealPlan[day.property].map((item, index) => {
-                                return (
-                                    <ListItem key={`${item}-${index}`}>
-                                        {item}{' '}
-                                        <DeleteItemButton
-                                            onClick={() =>
-                                                handleDeleteItem(
-                                                    day.property,
-                                                    index
-                                                )
-                                            }
-                                        >
-                                            ➖
-                                        </DeleteItemButton>
-                                    </ListItem>
-                                );
-                            })}
+                            {Object.keys(mealPlan[day.property]).map(
+                                (mN, mealIndex) => {
+                                    const mealName = mN as keyof Meals;
+                                    return (
+                                        <div key={mealIndex}>
+                                            <MealTitle>
+                                                <h3>
+                                                    {
+                                                        MEAL_NAMES[
+                                                            mN as unknown as keyof MEAL_NAMES
+                                                        ]
+                                                    }
+                                                </h3>
+                                                <AddItemButton
+                                                    onClick={() =>
+                                                        handleAddItem(
+                                                            day.property,
+                                                            mealName
+                                                        )
+                                                    }
+                                                >
+                                                    ➕
+                                                </AddItemButton>
+                                            </MealTitle>
+                                            {mealPlan[day.property][
+                                                mealName
+                                            ].map((item, index) => (
+                                                <ListItem
+                                                    key={`${item}-${index}`}
+                                                >
+                                                    {item}{' '}
+                                                    <DeleteItemButton
+                                                        onClick={() =>
+                                                            handleDeleteItem(
+                                                                day.property,
+                                                                mealName,
+                                                                index
+                                                            )
+                                                        }
+                                                    >
+                                                        ➖
+                                                    </DeleteItemButton>
+                                                </ListItem>
+                                            ))}
+                                        </div>
+                                    );
+                                }
+                            )}
                         </List>
                     </Day>
                 ))}
