@@ -1,43 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
-enum QuadrantPropertyNames {
-    importantUrgent = 'importantUrgent',
-    importantNotUrgent = 'importantNotUrgent',
-    notImportantUrgent = 'notImportantUrgent',
-    notImportantNotUrgent = 'notImportantNotUrgent',
+enum DaysOfTheWeek {
+    monday = 'monday',
+    tuesday = 'tuesday',
+    wednesday = 'wednesday',
+    thursday = 'thursday',
+    friday = 'friday',
+    saturday = 'saturday',
+    sunday = 'sunday',
 }
 
-interface Quadrants {
-    [QuadrantPropertyNames.importantUrgent]: string[];
-    [QuadrantPropertyNames.importantNotUrgent]: string[];
-    [QuadrantPropertyNames.notImportantUrgent]: string[];
-    [QuadrantPropertyNames.notImportantNotUrgent]: string[];
+interface MealPlan {
+    [DaysOfTheWeek.monday]: string[];
+    [DaysOfTheWeek.tuesday]: string[];
+    [DaysOfTheWeek.wednesday]: string[];
+    [DaysOfTheWeek.thursday]: string[];
+    [DaysOfTheWeek.friday]: string[];
+    [DaysOfTheWeek.saturday]: string[];
+    [DaysOfTheWeek.sunday]: string[];
 }
 
-const QUADRANT_BUILDERS = [
+const LOCAL_STORAGE_PROPERTY = 'mealplan';
+
+const MEAL_PLAN_BUILDER = [
     {
-        name: 'Important & Urgent: Do',
-        property: QuadrantPropertyNames.importantUrgent,
+        name: 'Monday',
+        property: DaysOfTheWeek.monday,
     },
     {
-        name: 'Important & Not Urgent: Schedule',
-        property: QuadrantPropertyNames.importantNotUrgent,
+        name: 'Tuesday',
+        property: DaysOfTheWeek.tuesday,
     },
     {
-        name: 'Not Important & Urgent: Delegate',
-        property: QuadrantPropertyNames.notImportantUrgent,
+        name: 'Wednesday',
+        property: DaysOfTheWeek.wednesday,
     },
     {
-        name: 'Not Important & Not Urgent: Eliminate',
-        property: QuadrantPropertyNames.notImportantNotUrgent,
+        name: 'Thursday',
+        property: DaysOfTheWeek.thursday,
+    },
+    {
+        name: 'Friday',
+        property: DaysOfTheWeek.friday,
+    },
+    {
+        name: 'Saturday',
+        property: DaysOfTheWeek.saturday,
+    },
+    {
+        name: 'Sunday',
+        property: DaysOfTheWeek.sunday,
     },
 ];
 
-const Quadrants = styled.div`
+const Days = styled.div`
     box-sizing: border-box;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     grid-gap: 5rem;
     width: 100vw;
 
@@ -46,14 +66,14 @@ const Quadrants = styled.div`
     }
 `;
 
-const QuadrantContainer = styled.div`
+const Day = styled.div`
     box-sizing: border-box;
     min-height: 40vh;
     min-width: 50%;
     padding: 1rem;
 `;
 
-const QuadrantTitle = styled.div`
+const DayTitle = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -116,55 +136,61 @@ function formatTimestamp(date: Date): string {
 }
 
 const App: React.FC = () => {
-    const [quadrants, setQuadrants] = useState<Quadrants>({
-        importantUrgent: [],
-        importantNotUrgent: [],
-        notImportantUrgent: [],
-        notImportantNotUrgent: [],
+    const [mealPlan, setMealPlan] = useState<MealPlan>({
+        monday: [],
+        tuesday: [],
+        wednesday: [],
+        thursday: [],
+        friday: [],
+        saturday: [],
+        sunday: [],
     });
 
     const [updateLocalStorage, setUpdateLocalStorage] = useState(false);
 
     useEffect(() => {
-        const savedQuadrants = localStorage.getItem('quadrants');
-        if (savedQuadrants) {
-            setQuadrants(JSON.parse(savedQuadrants));
+        const savedMealPlan = localStorage.getItem(LOCAL_STORAGE_PROPERTY);
+        if (savedMealPlan) {
+            setMealPlan(JSON.parse(savedMealPlan));
         }
     }, []);
 
     useEffect(() => {
         if (updateLocalStorage) {
-            localStorage.setItem('quadrants', JSON.stringify(quadrants));
+            localStorage.setItem(
+                LOCAL_STORAGE_PROPERTY,
+                JSON.stringify(mealPlan)
+            );
             setUpdateLocalStorage(false);
         }
-    }, [quadrants]);
+    }, [mealPlan]);
 
-    const handleAddItem = (quadrant: keyof Quadrants) => {
+    const handleAddItem = (day: keyof MealPlan) => {
         const newItem = prompt('Enter a new item:');
         if (newItem) {
-            setQuadrants((prevQuadrants) => ({
-                ...prevQuadrants,
-                [quadrant]: [...prevQuadrants[quadrant], newItem],
+            setMealPlan((prevMealPlan) => ({
+                ...prevMealPlan,
+                [day]: [...prevMealPlan[day], newItem],
             }));
             setUpdateLocalStorage(true);
         }
     };
 
-    const handleDeleteItem = (quadrant: keyof Quadrants, index: number) => {
-        setQuadrants((prevQuadrants) => {
-            const updatedQuadrant = prevQuadrants[quadrant].filter(
+    const handleDeleteItem = (day: keyof MealPlan, index: number) => {
+        setMealPlan((prevMealPlan) => {
+            const updatedMealPlan = prevMealPlan[day].filter(
                 (_, i) => i !== index
             );
             return {
-                ...prevQuadrants,
-                [quadrant]: updatedQuadrant,
+                ...prevMealPlan,
+                [mealPlan]: updatedMealPlan,
             };
         });
         setUpdateLocalStorage(true);
     };
 
     const handleExportData = () => {
-        const dataToExport = localStorage.getItem('quadrants');
+        const dataToExport = localStorage.getItem(LOCAL_STORAGE_PROPERTY);
         if (dataToExport) {
             const element = document.createElement('a');
             element.setAttribute(
@@ -174,7 +200,7 @@ const App: React.FC = () => {
             );
             element.setAttribute(
                 'download',
-                `tasks_${formatTimestamp(new Date())}.json`
+                `${LOCAL_STORAGE_PROPERTY}_${formatTimestamp(new Date())}.json`
             );
             element.style.display = 'none';
             document.body.appendChild(element);
@@ -189,7 +215,7 @@ const App: React.FC = () => {
             const reader = new FileReader();
             reader.onload = (event) => {
                 const importedData = event.target?.result as string;
-                setQuadrants(JSON.parse(importedData));
+                setMealPlan(JSON.parse(importedData));
             };
             reader.readAsText(file);
         }
@@ -213,43 +239,39 @@ const App: React.FC = () => {
                     />
                 </div>
             </ExportImportContainer>
-            <Quadrants>
-                {QUADRANT_BUILDERS.map((quadrantBuilder) => (
-                    <QuadrantContainer key={quadrantBuilder.name}>
-                        <QuadrantTitle>
-                            <h2>{quadrantBuilder.name}</h2>
+            <Days>
+                {MEAL_PLAN_BUILDER.map((day) => (
+                    <Day key={day.name}>
+                        <DayTitle>
+                            <h2>{day.name}</h2>
                             <AddItemButton
-                                onClick={() =>
-                                    handleAddItem(quadrantBuilder.property)
-                                }
+                                onClick={() => handleAddItem(day.property)}
                             >
                                 ➕
                             </AddItemButton>
-                        </QuadrantTitle>
+                        </DayTitle>
                         <List>
-                            {quadrants[quadrantBuilder.property].map(
-                                (item, index) => {
-                                    return (
-                                        <ListItem key={`${item}-${index}`}>
-                                            {item}{' '}
-                                            <DeleteItemButton
-                                                onClick={() =>
-                                                    handleDeleteItem(
-                                                        quadrantBuilder.property,
-                                                        index
-                                                    )
-                                                }
-                                            >
-                                                ➖
-                                            </DeleteItemButton>
-                                        </ListItem>
-                                    );
-                                }
-                            )}
+                            {mealPlan[day.property].map((item, index) => {
+                                return (
+                                    <ListItem key={`${item}-${index}`}>
+                                        {item}{' '}
+                                        <DeleteItemButton
+                                            onClick={() =>
+                                                handleDeleteItem(
+                                                    day.property,
+                                                    index
+                                                )
+                                            }
+                                        >
+                                            ➖
+                                        </DeleteItemButton>
+                                    </ListItem>
+                                );
+                            })}
                         </List>
-                    </QuadrantContainer>
+                    </Day>
                 ))}
-            </Quadrants>
+            </Days>
         </>
     );
 };
