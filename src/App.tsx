@@ -324,16 +324,12 @@ const App: React.FC = () => {
                             {Object.keys(mealPlan[day.property]).map(
                                 (mN, mealIndex) => {
                                     const mealName = mN as keyof Meals;
+                                    // @ts-expect-error
+                                    const displayedMealName = MEAL_NAMES[mN];
                                     return (
                                         <div key={mealIndex}>
                                             <MealTitle>
-                                                <h3>
-                                                    {
-                                                        MEAL_NAMES[
-                                                            mN as unknown as keyof MEAL_NAMES
-                                                        ]
-                                                    }
-                                                </h3>
+                                                <h3>{displayedMealName}</h3>
                                                 <AddItemButton
                                                     onClick={() =>
                                                         handleAddItem(
